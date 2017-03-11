@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys, re
 import socket, binascii
 import logging.config, yaml
 from textwrap import wrap
@@ -9,19 +9,15 @@ from wakeonlan import wol
 BIND_ADDRESS = "0.0.0.0"
 BIND_PORT = 5009
 
+DGRAM_REGEX = re.compile(r'(?:^([fF]){12}([0-9a-fA-F]{12}){16}$)')
+
 
 def read_payload(payload):
     try:
-        frame = payload[:12]
-
-        if frame.lower() == 'f' * 12:
-            repetitions = payload[12:]
-            list = wrap(repetitions, 12)
-
-            if len(list) == 16:
-                return list[0]
-
-    except Exception:
+        search = DGRAM_REGEX.search(payload)
+        if search:
+            return search.group(2)
+    except RuntimeError:
         pass
 
     raise ValueError("Received payload is not valid")
