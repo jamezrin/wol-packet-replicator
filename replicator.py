@@ -1,31 +1,34 @@
 #!/usr/bin/env python
 
-import sys, re
-import socket, binascii
-import logging.config, yaml
-from textwrap import wrap
-from wakeonlan import wol
+import binascii
+import logging.config
+import os
+import re
+import socket
+import sys
+import yaml
 
 BIND_ADDRESS = "0.0.0.0"
 BIND_PORT = 5009
 
+TARGET_ADDRESS = "255.255.255.255"
+TARGET_PORT = 9
+
 DGRAM_REGEX = re.compile(r'(?:^([fF]){12}([0-9a-fA-F]{12}){16}$)')
 
 
-def read_payload(payload):
-    try:
-        search = DGRAM_REGEX.search(payload)
-        if search:
-            return search.group(2)
-    except RuntimeError:
-        pass
-
-    raise ValueError("Received payload is not valid")
+def forward_packet(data):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.connect((TARGET_ADDRESS, TARGET_PORT))
+    sock.send(data)
+    sock.close()
 
 
 def main():
-    logconfig = yaml.load(open('logging.yml'))
-    logging.config.dictConfig(logconfig)
+    with open(os.path.join(os.path.dirname(__file__), 'logging.yml')) as file:
+        logging.config.dictConfig(yaml.load(file))
+
     logger = logging.getLogger('replicator')
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -34,18 +37,17 @@ def main():
     while True:
         try:
             data, addr = sock.recvfrom(102)
-            logger.debug("Received packet from %s:%s" % (addr[0], addr[1]))
+            logger.debug("Received packet from ip %s port %s" % (addr[0], addr[1]))
 
             payload = binascii.hexlify(data)
             logger.debug("Received payload: %s" % payload)
 
-            try:
-                target = read_payload(payload)
-                logger.debug("Waking up: %s" % target)
-                wol.send_magic_packet(target)
-
-            except ValueError as error:
-                logger.debug(error)
+            if DGRAM_REGEX.match(payload):
+                target = DGRAM_REGEX.search(payload).group(2)
+                logger.debug("Forwarding the packet for %s to ip %s port %s" % (target, TARGET_ADDRESS, TARGET_PORT))
+                forward_packet(data)
+            else:
+                logger.debug("Received payload is not valid, ignoring...")
 
         except KeyboardInterrupt:
             logger.debug("Exiting because of keyboard interrupt")
