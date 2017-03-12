@@ -14,7 +14,8 @@ BIND_PORT = 5009
 TARGET_ADDRESS = "255.255.255.255"
 TARGET_PORT = 9
 
-DGRAM_REGEX = re.compile(r'(?:^([fF]){12}([0-9a-fA-F]{12}){16}$)')
+# https://regex101.com/r/2l8eJp/2
+DGRAM_REGEX = re.compile(r'(?:^([fF]){12}([0-9a-fA-F]{12}){16}([0-9a-fA-F]{12})?$)')
 
 
 def forward_packet(data):
@@ -36,7 +37,7 @@ def main():
 
     while True:
         try:
-            data, addr = sock.recvfrom(102)
+            data, addr = sock.recvfrom(108)
             logger.debug("Received packet from ip %s port %s" % (addr[0], addr[1]))
 
             payload = binascii.hexlify(data)
