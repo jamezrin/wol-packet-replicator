@@ -14,8 +14,8 @@ BIND_PORT = 5009
 TARGET_ADDRESS = "255.255.255.255"
 TARGET_PORT = 9
 
-# https://regex101.com/r/2l8eJp/2
-DGRAM_REGEX = re.compile(r'(?:^([fF]){12}([0-9a-fA-F]{12}){16}([0-9a-fA-F]{12})?$)')
+# https://regex101.com/r/2l8eJp/3
+DGRAM_REGEX = re.compile(r'(?:^([fF]{12})(([0-9a-fA-F]{12}){16})([0-9a-fA-F]{12})?$)')
 
 
 def forward_packet(data):
@@ -44,7 +44,7 @@ def main():
             logger.debug("Received payload: %s" % payload)
 
             if DGRAM_REGEX.match(payload):
-                target = DGRAM_REGEX.search(payload).group(2)
+                target = DGRAM_REGEX.search(payload).group(3)
                 logger.debug("Forwarding the packet for %s to ip %s port %s" % (target, TARGET_ADDRESS, TARGET_PORT))
                 forward_packet(data)
             else:
