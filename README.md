@@ -5,7 +5,7 @@ This is a easy way of using wake on lan from outside the network when your route
 I use it in a Raspberry Pi without problems so far, and it works great.
 
 ## Usage
-1. Clone this repository: `git clone https://github.com/jaime29010/wol-packet-replicator
+1. Clone this repository: `git clone https://github.com/jaime29010/wol-packet-replicator`
 2. Install requirements: `pip install pyyaml`
 3. Run it: `python replicator.py`
 
