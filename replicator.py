@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import binascii
-import logging.config
-import os
 import re
 import socket
 import sys
-import yaml
+import logging
+import os
 
 BIND_ADDRESS = "0.0.0.0"
 BIND_PORT = 5009
@@ -26,34 +25,47 @@ def forward_packet(data):
     sock.close()
 
 
-def main():
-    with open(os.path.join(os.path.dirname(__file__), 'logging.yml')) as file:
-        logging.config.dictConfig(yaml.load(file))
+def handle_packet(data):
+    payload = binascii.hexlify(data)
+    logger.debug("Received payload: %s" % payload)
 
-    logger = logging.getLogger('replicator')
+    if DGRAM_REGEX.match(payload):
+        target = DGRAM_REGEX.search(payload).group(3)
+        logger.debug("Forwarding the packet for %s to ip %s port %s" % (target, TARGET_ADDRESS, TARGET_PORT))
+        forward_packet(data)
+    else:
+        logger.debug("Received payload is not valid, ignoring...")
 
+
+def start_listener():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((BIND_ADDRESS, BIND_PORT))
 
     while True:
-        try:
-            data, addr = sock.recvfrom(108)
-            logger.debug("Received packet from ip %s port %s" % (addr[0], addr[1]))
-
-            payload = binascii.hexlify(data)
-            logger.debug("Received payload: %s" % payload)
-
-            if DGRAM_REGEX.match(payload):
-                target = DGRAM_REGEX.search(payload).group(3)
-                logger.debug("Forwarding the packet for %s to ip %s port %s" % (target, TARGET_ADDRESS, TARGET_PORT))
-                forward_packet(data)
-            else:
-                logger.debug("Received payload is not valid, ignoring...")
-
-        except KeyboardInterrupt:
-            logger.debug("Exiting because of keyboard interrupt")
-            sys.exit()
+        data, addr = sock.recvfrom(108)
+        logger.debug("Received packet from ip %s port %s" % (addr[0], addr[1]))
+        handle_packet(data)
 
 
 if __name__ == '__main__':
-    main()
+    logFormatter = logging.Formatter("%(asctime)s [%(levelname)s] - %(message)s")
+    logger = logging.getLogger()
+
+    path = os.path.dirname(os.path.realpath(__file__))
+    file = os.path.join(path, "app.log")
+
+    fileHandler = logging.FileHandler(file)
+    fileHandler.setFormatter(logFormatter)
+    logger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler(sys.stdout)
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)
+    logger.setLevel(logging.DEBUG)
+
+    try:
+        logger.debug("The application has now started listening for packets")
+        start_listener()
+    except KeyboardInterrupt:
+        logger.debug("Exiting because of keyboard interrupt")
+        sys.exit()
