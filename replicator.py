@@ -51,7 +51,7 @@ def handle_packet(data):
             logger.debug("Forwarding the packet for %s to %s:%s" % (address, TARGET_ADDRESS, TARGET_PORT))
             forward_packet(data)
         else:
-            logger.debug("This request has been denied because the provided password is not correct")
+            logger.debug("This request has been denied because the received password is not correct")
     else:
         logger.debug("Received payload is not valid, ignoring...")
 
