@@ -13,8 +13,21 @@ BIND_PORT = 5009
 TARGET_ADDRESS = "255.255.255.255"
 TARGET_PORT = 9
 
+FORCED_AUTH_HOSTS = {
+    # Mac Address : SecureOn Secret 
+    'aabbccddeeff': 'a1b2c3d4e5f6',
+    'ffeeddccbbaa': '6f5e4d3c2b1a'
+}
+
 # https://regex101.com/r/2l8eJp/3
 DGRAM_REGEX = re.compile(r'(?:^([fF]{12})(([0-9a-fA-F]{12}){16})([0-9a-fA-F]{12})?$)')
+
+
+def is_allowed(address, password):
+    if address in FORCED_AUTH_HOSTS:
+        logger.debug("Enforcing authentication for %s" % address)
+        return password == FORCED_AUTH_HOSTS[address]
+    return True
 
 
 def forward_packet(data):
@@ -30,9 +43,15 @@ def handle_packet(data):
     logger.debug("Received payload: %s" % payload)
 
     if DGRAM_REGEX.match(payload):
-        target = DGRAM_REGEX.search(payload).group(3)
-        logger.debug("Forwarding the packet for %s to ip %s port %s" % (target, TARGET_ADDRESS, TARGET_PORT))
-        forward_packet(data)
+        search = DGRAM_REGEX.search(payload)
+        address = search.group(3)
+        password = search.group(4)
+
+        if is_allowed(address, password):
+            logger.debug("Forwarding the packet for %s to %s:%s" % (address, TARGET_ADDRESS, TARGET_PORT))
+            forward_packet(data)
+        else:
+            logger.debug("This request has been denied because the provided password is not correct")
     else:
         logger.debug("Received payload is not valid, ignoring...")
 
@@ -43,7 +62,7 @@ def start_listener():
 
     while True:
         data, addr = sock.recvfrom(108)
-        logger.debug("Received packet from ip %s port %s" % (addr[0], addr[1]))
+        logger.debug("Received packet from %s:%s" % (addr[0], addr[1]))
         handle_packet(data)
 
 

@@ -1,8 +1,9 @@
 # wol-packet-replicator
 A very simple python script that replicates the listens for UDP wake on lan packets from outside the network
 
-This is a easy way of using wake on lan from outside the network when your router does not support forwarding ports to the broadcast address
-I use it in a Raspberry Pi without problems so far, and it works great.
+This is a easy way of using wake on lan from outside the network when your router does not support forwarding ports to the broadcast address.  
+It also allows you to enforce the SecureOn password on a device by modifying the script.
+I use it in a Raspberry Pi without running into any problems so far.
 
 ## Usage
 1. Clone this repository: `git clone https://github.com/jaime29010/wol-packet-replicator`
