@@ -1,23 +1,12 @@
 #!/usr/bin/env python
 
+from settings import *
 import binascii
 import re
 import socket
 import sys
 import logging
 import os
-
-BIND_ADDRESS = "0.0.0.0"
-BIND_PORT = 5009
-
-TARGET_ADDRESS = "255.255.255.255"
-TARGET_PORT = 9
-
-FORCED_AUTH_HOSTS = {
-    # Mac Address : SecureOn Secret 
-    'aabbccddeeff': 'a1b2c3d4e5f6',
-    'ffeeddccbbaa': '6f5e4d3c2b1a'
-}
 
 # https://regex101.com/r/2l8eJp/3
 DGRAM_REGEX = re.compile(r'(?:^([fF]{12})(([0-9a-fA-F]{12}){16})([0-9a-fA-F]{12})?$)')
@@ -69,6 +58,7 @@ def start_listener():
 if __name__ == '__main__':
     logFormatter = logging.Formatter("%(asctime)s [%(levelname)s] - %(message)s")
     logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
 
     path = os.path.dirname(os.path.realpath(__file__))
     file = os.path.join(path, "app.log")
@@ -80,7 +70,6 @@ if __name__ == '__main__':
     consoleHandler = logging.StreamHandler(sys.stdout)
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
-    logger.setLevel(logging.DEBUG)
 
     try:
         logger.debug("The application has now started listening for packets")

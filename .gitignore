@@ -191,8 +191,14 @@ $RECYCLE.BIN/
 *.lnk
 
 ### Custom ###
-# I don't want the repository to have anything to do with PyCharm (Idea)
+# I don't want the repository to have anything to do with PyCharm (Jetbrains Idea)
 .idea/
 *.iml
+
+# Settings file
+settings.py
+
+# Application logs
+app.log
 
 # End of https://www.gitignore.io/api/pycharm,python,linux,git,windows,django
