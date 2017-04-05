@@ -9,4 +9,3 @@ FORCED_AUTH_HOSTS = {
     'aabbccddeeff': 'a1b2c3d4e5f6',
     'ffeeddccbbaa': '6f5e4d3c2b1a'
 }
-

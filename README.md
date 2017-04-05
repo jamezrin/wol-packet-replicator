@@ -21,5 +21,5 @@ You can test it with [this tool](http://www.wakeonlan.me/index.php)
 Check the output of the script or the `app.log` file to see the debug messages this prints
 
 ### Enforcing SecureOn passwords
-You can also add your own settings [here](https://github.com/jaime29010/wol-packet-replicator/blob/master/replicator.py#L16-L20) as shown in the two examples. 
+You can also add your own settings [here](https://github.com/jaime29010/wol-packet-replicator/blob/master/settings.py#L7-L11) as shown in the two examples. 
 This is a great way of making sure only you can wake up your devices even if your NIC does not support SecureOn
