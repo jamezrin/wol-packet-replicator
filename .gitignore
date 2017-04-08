@@ -195,9 +195,6 @@ $RECYCLE.BIN/
 .idea/
 *.iml
 
-# Settings file
-settings.py
-
 # Application logs
 app.log
 
